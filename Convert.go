@@ -37,7 +37,7 @@ func GetTypeConverter(v interface{}) TypeConverter {
 func ChangeType(v interface{}, conversionType reflect.Type, format FormatProvider) (interface{}, error) {
 	typeConverter := GetTypeConverter(v)
 	if typeConverter == nil {
-		return nil, errors.New("Invalid Cast : TypeConverter not found.")
+		return nil, errors.New("invalid cast : TypeConverter not found")
 	}
 	return typeConverter.ChangeType(v, conversionType, format)
 }

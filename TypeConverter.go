@@ -9,7 +9,6 @@ type TypeConverter interface {
 	GetName() string
 	IsConvertible(v interface{}) bool
 	ToBool(v interface{}, format FormatProvider) (*bool, error)
-	ToByte(v interface{}, format FormatProvider) (*byte, error)
 	ToTime(v interface{}, format FormatProvider) (*time.Time, error)
 	ToInt(v interface{}, format FormatProvider) (*int, error)
 	ToInt16(v interface{}, format FormatProvider) (*int16, error)
