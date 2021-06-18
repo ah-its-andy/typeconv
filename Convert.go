@@ -2,9 +2,50 @@ package typeconv
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"time"
 )
+
+func Int16MaxValue() int16 {
+	return 32767
+}
+
+func Int16MinValue() int16 {
+	return -32768
+}
+
+func Int32MaxValue() int32 {
+	return 2147483647
+}
+
+func Int32MinValue() int32 {
+	return -2147483648
+}
+
+func Int64MaxValue() int64 {
+	return 9223372036854775807
+}
+
+func Int64MinValue() int64 {
+	return -9223372036854775808
+}
+
+func Float32MaxValue() float32 {
+	return 3.40282347e+38
+}
+
+func Float32MinValue() float32 {
+	return -3.40282347e+38
+}
+
+func Float64MaxValue() float64 {
+	return 1.7976931348623157e+308
+}
+
+func Float64MinValue() float64 {
+	return -1.7976931348623157e+308
+}
 
 var typeConverters []TypeConverter = make([]TypeConverter, 0)
 
@@ -34,144 +75,115 @@ func GetTypeConverter(v interface{}) TypeConverter {
 	return typeConv
 }
 
-func ChangeType(v interface{}, conversionType reflect.Type, format FormatProvider) (interface{}, error) {
-	typeConverter := GetTypeConverter(v)
-	if typeConverter == nil {
+func ChangeType(v interface{}, conversionType reflect.Type, format string) (interface{}, error) {
+	conv := GetTypeConverter(v)
+	if conv == nil {
 		return nil, errors.New("invalid cast : TypeConverter not found")
 	}
-	return typeConverter.ChangeType(v, conversionType, format)
+	if v == nil {
+		return nil, nil
+	}
+	if conversionType.Name() == reflect.TypeOf(time.Now()).Name() {
+		return conv.ToTime(v, format)
+	}
+	switch conversionType.Kind() {
+	case reflect.Bool:
+		return conv.ToBool(v)
+	case reflect.Int:
+		return conv.ToInt(v)
+	case reflect.Int16:
+		return conv.ToInt16(v)
+	case reflect.Int32:
+		return conv.ToInt32(v)
+	case reflect.Int64:
+		return conv.ToInt64(v)
+	case reflect.Float32:
+		return conv.ToFloat32(v)
+	case reflect.Float64:
+		return conv.ToFloat64(v)
+	case reflect.String:
+		return conv.ToString(v, format)
+	default:
+		return nil, fmt.Errorf("invalid cast: %T could not cast to float64", v)
+	}
 }
 
-func ToBoolFormat(v interface{}, format FormatProvider) (*bool, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*bool), nil
-}
-func ToByteFormat(v interface{}, format FormatProvider) (*byte, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*byte), nil
-}
-func ToTimeFormat(v interface{}, format FormatProvider) (*time.Time, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
+func ToTimef(v interface{}, format string) (*time.Time, error) {
+	r, err := ChangeType(v, reflect.TypeOf(time.Now()), format)
 	if err != nil {
 		return nil, err
 	}
 	return r.(*time.Time), nil
 }
-func ToIntFormat(v interface{}, format FormatProvider) (*int, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*int), nil
-}
-func ToInt16Format(v interface{}, format FormatProvider) (*int16, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*int16), nil
-}
-func ToInt32Format(v interface{}, format FormatProvider) (*int32, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*int32), nil
-}
-func ToInt64Format(v interface{}, format FormatProvider) (*int64, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*int64), nil
-}
-func ToFloat32Format(v interface{}, format FormatProvider) (*float32, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*float32), nil
-}
-func ToFloat64Format(v interface{}, format FormatProvider) (*float64, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
-	if err != nil {
-		return nil, err
-	}
-	return r.(*float64), nil
-}
-func ToStringFormat(v interface{}, format FormatProvider) (*string, error) {
-	r, err := ChangeType(v, reflect.TypeOf(false), format)
+
+func ToStringf(v interface{}, format string) (*string, error) {
+	r, err := ChangeType(v, reflect.TypeOf(""), format)
 	if err != nil {
 		return nil, err
 	}
 	return r.(*string), nil
 }
 
-func ToTimef(v interface{}, format string) (*time.Time, error) {
-	formatProvider, err := GetTimeFormat(format)
-	if err != nil {
-		return nil, err
-	}
-	return ToTimeFormat(v, formatProvider)
-}
-
-func ToFloat32f(v interface{}, format string) (*float32, error) {
-	formatProvider, err := GetTimeFormat(format)
-	if err != nil {
-		return nil, err
-	}
-	return ToFloat32Format(v, formatProvider)
-}
-
-func ToFloat64f(v interface{}, format string) (*float64, error) {
-	formatProvider, err := GetTimeFormat(format)
-	if err != nil {
-		return nil, err
-	}
-	return ToFloat64Format(v, formatProvider)
-}
-
-func ToStringf(v interface{}, format string) (*string, error) {
-	formatProvider, err := GetTimeFormat(format)
-	if err != nil {
-		return nil, err
-	}
-	return ToStringFormat(v, formatProvider)
-}
-
 func ToBool(v interface{}) (*bool, error) {
-	return ToBoolFormat(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(false), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*bool), nil
 }
-func ToByte(v interface{}) (*byte, error) {
-	return ToByteFormat(v, nil)
-}
+
 func ToTime(v interface{}) (*time.Time, error) {
-	return ToTimeFormat(v, nil)
+	return ToTimef(v, "")
 }
+
 func ToInt(v interface{}) (*int, error) {
-	return ToIntFormat(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(int(0)), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*int), nil
 }
+
 func ToInt16(v interface{}) (*int16, error) {
-	return ToInt16Format(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(int16(0)), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*int16), nil
 }
+
 func ToInt32(v interface{}) (*int32, error) {
-	return ToInt32Format(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(int32(0)), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*int32), nil
 }
+
 func ToInt64(v interface{}) (*int64, error) {
-	return ToInt64Format(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(int64(0)), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*int64), nil
 }
+
 func ToFloat32(v interface{}) (*float32, error) {
-	return ToFloat32Format(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(float32(0)), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*float32), nil
 }
+
 func ToFloat64(v interface{}) (*float64, error) {
-	return ToFloat64Format(v, nil)
+	r, err := ChangeType(v, reflect.TypeOf(float64(0)), "")
+	if err != nil {
+		return nil, err
+	}
+	return r.(*float64), nil
 }
+
 func ToString(v interface{}) (*string, error) {
-	return ToStringFormat(v, nil)
+	return ToStringf(v, "")
 }
